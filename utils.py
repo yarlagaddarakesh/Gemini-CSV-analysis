@@ -25,7 +25,7 @@ def get_model_response(file,query):
 
 
     q = "Which employee has maximum salary?"
-    records = searcher.get_relevant_document(q)
+    records = searcher.similarity_search(q)
     print(records)
 
     prompt_template = """
@@ -49,4 +49,4 @@ def get_model_response(file,query):
         },
         return_only_outputs=True
     )
-    return response['Output_text']
+    return response['output_text']
