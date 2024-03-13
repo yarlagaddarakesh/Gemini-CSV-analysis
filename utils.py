@@ -1,5 +1,4 @@
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores import chroma
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain.prompts import PromptTemplate
 from langchain.chains.question_answering import load_qa_chain
@@ -7,9 +6,12 @@ import os
 import google.generativeai as genai
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.vectorstores import FAISS
+# from langchain.llms import OpenAI
+# from langchain.embeddings.openai import OpenAIEmbeddings
 
 genai.configure(api_key="AIzaSyBJdSOqDwQYlpoBQ4Mt-sP33fO_R8qPDQw")
 os.environ["GOOGLE_API_KEY"]="AIzaSyBJdSOqDwQYlpoBQ4Mt-sP33fO_R8qPDQw"
+# os.environ["OPENAI_API_KEY"]="" # OpenAI
 
 
 #Function to get response from GEMINI PRO
@@ -21,12 +23,11 @@ def get_model_response(file,query):
 
     data = text_spliettr.split_text(context)
     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    # embeddings = OpenAIEmbeddings() #OpenAI
     searcher = FAISS.from_texts(data, embeddings)
 
 
-    q = "Which employee has maximum salary?"
-    records = searcher.similarity_search(q)
-    print(records)
+    records = searcher.similarity_search(query)
 
     prompt_template = """
         You have to answer the question from the provided context and make sure that you provide all the details\n
@@ -39,7 +40,8 @@ def get_model_response(file,query):
     prompt = PromptTemplate(template=prompt_template,input_variables=["context","question"])
     
     model = ChatGoogleGenerativeAI(model="gemini-pro",temperature=0.9)
-    
+    # model = OpenAI() # OpenAI API
+
     chain = load_qa_chain(model,chain_type="stuff",prompt=prompt)
     
     response = chain(
